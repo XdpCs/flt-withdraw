@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-<h1 id="header">Connect to Metamask</h1>
+<h1 id="header">Connect to Wallet</h1>
 <button class="connect"> Connect</button>
 <h2>Wallet Address: <span class="showAccount"></span></h2>
 <h2>Flt Balance: <span class="showFltBalance"></span></h2>
@@ -27,6 +27,12 @@
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 
+    async function getABI() {
+        const response = await fetch('fltDropABI.json');
+        const abi = await response.json();
+        return abi;
+    }
+
     import {ethers} from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.2.3/ethers.js";
 
     const connectEthereumButton = document.querySelector('.connect');
@@ -36,228 +42,7 @@
     const showLockTime = document.querySelector('.showLockTime');
     const fltDropAddress = '0x6081d7F04a8c31e929f25152d4ad37c83638C62b' // flt-drop Contract
     let lockedBalance = 0;
-    const fltDropAbi = [{
-        "inputs": [{
-            "internalType": "contract FluenceToken",
-            "name": "_token",
-            "type": "address"
-        }, {"internalType": "contract Executor", "name": "_executor", "type": "address"}, {
-            "internalType": "bytes32",
-            "name": "_merkleRoot",
-            "type": "bytes32"
-        }, {"internalType": "uint256", "name": "_halvePeriod", "type": "uint256"}, {
-            "internalType": "uint256",
-            "name": "_lockupPeriod",
-            "type": "uint256"
-        }, {"internalType": "uint256", "name": "_initialReward", "type": "uint256"}, {
-            "internalType": "uint256",
-            "name": "_claimingPeriod",
-            "type": "uint256"
-        }, {"internalType": "address", "name": "_canceler", "type": "address"}, {
-            "internalType": "uint256",
-            "name": "_maxClaimedSupply",
-            "type": "uint256"
-        }], "stateMutability": "nonpayable", "type": "constructor"
-    }, {
-        "inputs": [{"internalType": "address", "name": "target", "type": "address"}],
-        "name": "AddressEmptyCode",
-        "type": "error"
-    }, {
-        "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
-        "name": "AddressInsufficientBalance",
-        "type": "error"
-    }, {"inputs": [], "name": "ECDSAInvalidSignature", "type": "error"}, {
-        "inputs": [{
-            "internalType": "uint256",
-            "name": "length",
-            "type": "uint256"
-        }], "name": "ECDSAInvalidSignatureLength", "type": "error"
-    }, {
-        "inputs": [{"internalType": "bytes32", "name": "s", "type": "bytes32"}],
-        "name": "ECDSAInvalidSignatureS",
-        "type": "error"
-    }, {"inputs": [], "name": "FailedInnerCall", "type": "error"}, {
-        "inputs": [{
-            "internalType": "address",
-            "name": "token",
-            "type": "address"
-        }], "name": "SafeERC20FailedOperation", "type": "error"
-    }, {
-        "anonymous": false,
-        "inputs": [{"indexed": true, "internalType": "uint256", "name": "userId", "type": "uint256"}, {
-            "indexed": false,
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-        }, {"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}, {
-            "indexed": false,
-            "internalType": "bytes32",
-            "name": "leaf",
-            "type": "bytes32"
-        }],
-        "name": "Claimed",
-        "type": "event"
-    }, {
-        "anonymous": false,
-        "inputs": [{"indexed": true, "internalType": "address", "name": "from", "type": "address"}, {
-            "indexed": true,
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-        }, {"indexed": false, "internalType": "uint256", "name": "value", "type": "uint256"}],
-        "name": "Transfer",
-        "type": "event"
-    }, {
-        "anonymous": false,
-        "inputs": [{"indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256"}],
-        "name": "TransferUnclaimed",
-        "type": "event"
-    }, {
-        "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
-        "name": "balanceOf",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "canceler",
-        "outputs": [{"internalType": "address", "name": "", "type": "address"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [{"internalType": "uint32", "name": "userId", "type": "uint32"}, {
-            "internalType": "bytes32[]",
-            "name": "merkleProof",
-            "type": "bytes32[]"
-        }, {"internalType": "address", "name": "temporaryAddress", "type": "address"}, {
-            "internalType": "bytes",
-            "name": "signature",
-            "type": "bytes"
-        }], "name": "claimTokens", "outputs": [], "stateMutability": "nonpayable", "type": "function"
-    }, {
-        "inputs": [],
-        "name": "claimedSupply",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "claimingEndTime",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "currentReward",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "decimals",
-        "outputs": [{"internalType": "uint8", "name": "", "type": "uint8"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "deployTime",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "executor",
-        "outputs": [{"internalType": "contract Executor", "name": "", "type": "address"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "halvePeriod",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "initialReward",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [{"internalType": "uint256", "name": "index", "type": "uint256"}],
-        "name": "isClaimed",
-        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "isClaimingActive",
-        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [{"internalType": "address", "name": "", "type": "address"}],
-        "name": "lockedBalances",
-        "outputs": [{"internalType": "uint256", "name": "amount", "type": "uint256"}, {
-            "internalType": "uint256",
-            "name": "unlockTime",
-            "type": "uint256"
-        }],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "lockupPeriod",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "maxClaimedSupply",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "merkleRoot",
-        "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "name",
-        "outputs": [{"internalType": "string", "name": "", "type": "string"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "symbol",
-        "outputs": [{"internalType": "string", "name": "", "type": "string"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "token",
-        "outputs": [{"internalType": "contract FluenceToken", "name": "", "type": "address"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [],
-        "name": "totalSupply",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    }, {
-        "inputs": [{"internalType": "address", "name": "to", "type": "address"}, {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-        }],
-        "name": "transfer",
-        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    }, {"inputs": [], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function"}]
-    // const contractFltDrop = new ethers.Contract(fltDropAddress, fltDropAbi, provider)
+    const fltDropAbi = await getABI();
     console.log(`flt-drop合约地址: ${fltDropAddress}`)
     connectEthereumButton.addEventListener(`click`, connectOnClicker)
     withFltButton.addEventListener(`click`, withdrawOnClicker)
@@ -312,14 +97,14 @@
         const contractFltDrop = await new ethers.Contract(fltDropAddress, fltDropAbi, signer)
         console.log(`提取FLT: ${showFltBalance.innerHTML}`)
         if (lockedBalance === 0) {
-            alert('没有可以提取flt或者没有点击connect按钮获取数据')
+            alert('There are no FLT tokens available for withdrawal, or you haven\'t clicked the \'connect\' button to fetch the data(没有可以提取flt或者没有点击connect按钮获取数据)')
             return
         }
         try {
             let tx = await contractFltDrop.transfer(account, lockedBalance)
             await tx.wait()
         } catch (e) {
-            alert('提取失败 ' + e)
+            alert('Withdraw error（提取失败）: ' + e)
         }
     }
 </script>
