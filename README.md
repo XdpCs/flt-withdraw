@@ -11,6 +11,17 @@
 
 ## Usage
 
+### Web Link
+
+https://xdpcs.github.io/flt-withdraw/
+
+### To run it locally
+
 1. Run the `index.html` file.
 2. Click the `connect` button.
 3. Click the `withdraw` button.
+
+### Disclaimer
+
+If you believe any risks are associated with this tool, please submit a PR or open an issue, and I will address it as
+soon as possible. If you still feel uncomfortable with the tool, you are welcome to refrain from using it. Thank you!
