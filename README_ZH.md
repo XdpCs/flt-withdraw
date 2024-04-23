@@ -9,8 +9,8 @@
 
 [English](README.md) | [中文](README_ZH.md)
 
-## Usage
+## 使用
 
-1. Run the `index.html` file.
-2. Click the `connect` button.
-3. Click the `withdraw` button.
+1. 运行`index.html`文件
+2. 点击 `connect` 按钮
+3. 点击 `withdraw`按钮
