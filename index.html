@@ -293,9 +293,16 @@
         const signer = await provider.getSigner();
         const contractFltDrop = await new ethers.Contract(fltDropAddress, fltDropAbi, signer)
         console.log(`提取FLT: ${showFltBalance.innerHTML}`)
-        let tx = await contractFltDrop.transfer(account, lockedBalance)
-        await tx.wait()
-        console.log(tx)
+        if (lockedBalance === 0) {
+            alert('没有可以提取flt或者没有点击connect按钮获取数据')
+            return
+        }
+        try {
+            let tx = await contractFltDrop.transfer(account, lockedBalance)
+            await tx.wait()
+        } catch (e) {
+            alert('提取失败 ' + e)
+        }
     }
 </script>
 </body>

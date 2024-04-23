@@ -2,7 +2,8 @@
 
 flt tokens 提取
 
-## 运行
+## 使用
 
-运行index.html文件
-
+1. 运行`index.html`文件
+2. 点击 `connect` 按钮
+3. 点击 `withdraw`按钮
