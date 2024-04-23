@@ -11,6 +11,16 @@
 
 ## 使用
 
+### 网页链接
+
+https://xdpcs.github.io/flt-withdraw/
+
+### 本地运行
+
 1. 运行`index.html`文件
 2. 点击 `connect` 按钮
 3. 点击 `withdraw`按钮
+
+### 免责声明
+
+如果您觉得此工具存在风险，欢迎提交PR或者Issues，我会尽快处理。如果您觉得还是有风险，可以不使用此工具，谢谢！
