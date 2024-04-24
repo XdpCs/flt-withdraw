@@ -3,29 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect to Wallet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            margin-top: 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .button-wrapper {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+        }
+
+        .output {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-<h1 id="header">Connect to Wallet</h1>
-<button class="connect"> Connect</button>
-<h2>Wallet Address: <span class="showAccount"></span></h2>
-<h2>Flt Balance: <span class="showFltBalance"></span></h2>
-<h2>Lock Time (Based on the browser time zone): <span class="showLockTime"></span></h2>
-<button class="withdraw"> Withdraw</button>
-
+<div class="container">
+    <h1>Withdraw FLT</h1>
+    <div class="input-group">
+        <label for="account">Wallet Address:</label>
+        <span id="account" class="output"></span>
+    </div>
+    <div class="input-group">
+        <label for="fltBalance">FLT Balance:</label>
+        <span id="fltBalance" class="output"></span>
+    </div>
+    <div class="input-group">
+        <label for="lockTime">Lock Time (Based on the browser time zone):</label>
+        <span id="lockTime" class="output"></span>
+    </div>
+    <div class="button-wrapper">
+        <button id="connectButton">Connect</button>
+        <button id="withdrawButton" style="display: none;">Withdraw</button>
+    </div>
+</div>
 
 <script type="module">
-    function blockchainTimestampToDateTime(blockchainTimestamp) {
-        const date = new Date(blockchainTimestamp * 1000);
-
-        const year = date.getFullYear();
-        const month = ('0' + (date.getMonth() + 1)).slice(-2);
-        const day = ('0' + date.getDate()).slice(-2);
-        const hours = ('0' + date.getHours()).slice(-2);
-        const minutes = ('0' + date.getMinutes()).slice(-2);
-        const seconds = ('0' + date.getSeconds()).slice(-2);
-
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    }
+    import {ethers} from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.2.3/ethers.js";
 
     async function getABI() {
         const response = await fetch('fltDropABI.json');
@@ -33,79 +90,106 @@
         return abi;
     }
 
-    import {ethers} from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.2.3/ethers.js";
-
-    const connectEthereumButton = document.querySelector('.connect');
-    const withFltButton = document.querySelector('.withdraw')
-    const showAccount = document.querySelector('.showAccount');
-    const showFltBalance = document.querySelector('.showFltBalance');
-    const showLockTime = document.querySelector('.showLockTime');
-    const fltDropAddress = '0x6081d7F04a8c31e929f25152d4ad37c83638C62b' // flt-drop Contract
-    let lockedBalance = 0;
-    const fltDropAbi = await getABI();
-    console.log(`flt-drop合约地址: ${fltDropAddress}`)
-    connectEthereumButton.addEventListener(`click`, connectOnClicker)
-    withFltButton.addEventListener(`click`, withdrawOnClicker)
-    const getChainId = async () => {
-        const chainId = ethereum.networkVersion;
-        if (chainId !== "1") {
-            await window.ethereum
-                .request({
-                    method: "wallet_switchEthereumChain",
-                    params: [
-                        {
-                            chainId: "0x1",
-                        },
-                    ],
-                })
-                .then(() => {
-                    console.log("wallet_switchEthereumChain success");
-                })
-                .catch((e) => {
-                    console.log("wallet_switchEthereumChain error: ", e);
-                })
-                .finally(() => {
-                });
+    async function initEthereum() {
+        const ethereum = window.ethereum;
+        if (!ethereum) {
+            alert("Please install MetaMask or another Ethereum-compatible browser extension.");
+            return;
         }
-    };
 
-
-    async function connectOnClicker() {
-        console.log("连接钱包")
-        const provider = new ethers.BrowserProvider(window.ethereum)
-        await getChainId();
-        const accounts = await provider.send("eth_requestAccounts", []);
-        const account = accounts[0]
-        console.log(`钱包地址: ${account}`)
-        showAccount.innerHTML = account;
-        const contractFltDrop = new ethers.Contract(fltDropAddress, fltDropAbi, provider)
-        const fltBalance = await contractFltDrop.balanceOf(account)
-        console.log(`FLT余额: ${fltBalance}`)
-        lockedBalance = fltBalance
-        showFltBalance.innerHTML = ethers.formatEther(fltBalance.toString());
-        let lockedBalances = await contractFltDrop.lockedBalances(account)
-        console.log(`锁仓时间: ${lockedBalances.unlockTime}`)
-        showLockTime.innerHTML = blockchainTimestampToDateTime(lockedBalances.unlockTime.toString());
+        try {
+            await getChainId();
+            console.log("Ethereum initialized successfully.");
+        } catch (error) {
+            console.error("Error initializing Ethereum:", error);
+            alert("Error initializing Ethereum. Please make sure you have an Ethereum wallet installed and unlocked.");
+        }
     }
 
-    async function withdrawOnClicker() {
-        const provider = new ethers.BrowserProvider(window.ethereum)
-        await getChainId();
-        const accounts = await provider.send("eth_requestAccounts", []);
-        const account = accounts[0];
-        const signer = await provider.getSigner();
-        const contractFltDrop = await new ethers.Contract(fltDropAddress, fltDropAbi, signer)
-        console.log(`提取FLT: ${showFltBalance.innerHTML}`)
-        if (lockedBalance === 0) {
-            alert('There are no FLT tokens available for withdrawal, or you haven\'t clicked the \'connect\' button to fetch the data(没有可以提取flt或者没有点击connect按钮获取数据)')
-            return
+    async function getChainId() {
+        const chainId = ethereum.networkVersion;
+        if (chainId !== "1") {
+            try {
+                await ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{chainId: "0x1"}]
+                });
+                console.log("Switched to Ethereum Mainnet.");
+            } catch (error) {
+                console.error("Error switching Ethereum network:", error);
+                alert("Error switching to Ethereum Mainnet. Please switch manually.");
+            }
         }
-        try {
-            let tx = await contractFltDrop.transfer(account, lockedBalance)
-            await tx.wait()
-        } catch (e) {
-            alert('Withdraw error（提取失败）: ' + e)
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const connectButton = document.querySelector('#connectButton');
+        const withdrawButton = document.querySelector('#withdrawButton');
+        const showAccount = document.querySelector('#account');
+        const showFltBalance = document.querySelector('#fltBalance');
+        const showLockTime = document.querySelector('#lockTime');
+        const fltDropAddress = '0x6081d7F04a8c31e929f25152d4ad37c83638C62b'; // flt-drop Contract
+        let lockedBalance = 0;
+        const fltDropAbi = await getABI();
+
+        connectButton.addEventListener('click', connectOnClick);
+        withdrawButton.addEventListener('click', withdrawOnClick);
+
+        async function connectOnClick() {
+            console.log("Connecting to wallet...");
+            try {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                await initEthereum();
+                const accounts = await provider.send("eth_requestAccounts", []);
+                const account = accounts[0];
+                showAccount.textContent = account.toString();
+                const contractFltDrop = new ethers.Contract(fltDropAddress, fltDropAbi, provider);
+                const fltBalance = await contractFltDrop.balanceOf(account);
+                console.log(`FLT balance: ${fltBalance}`);
+                lockedBalance = fltBalance;
+                showFltBalance.textContent = ethers.formatEther(fltBalance);
+                const lockedBalances = await contractFltDrop.lockedBalances(account);
+                console.log(`Lock Time: ${lockedBalances.unlockTime}`);
+                showLockTime.textContent = blockchainTimestampToDateTime(lockedBalances.unlockTime.toString());
+                connectButton.style.display = 'none';
+                withdrawButton.style.display = '';
+            } catch (error) {
+                console.error("Error connecting to wallet:", error);
+                alert("Error connecting to wallet. Please make sure you have an Ethereum wallet installed and unlocked.");
+            }
         }
+
+        async function withdrawOnClick() {
+            console.log("Withdrawing FLT...");
+            try {
+                if (lockedBalance === 0) {
+                    throw new Error('There are no FLT tokens available for withdrawal.');
+                }
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                await initEthereum();
+                const signer = await provider.getSigner();
+                const accounts = await provider.send("eth_requestAccounts", []);
+                const account = accounts[0];
+                const contractFltDrop = new ethers.Contract(fltDropAddress, fltDropAbi, signer);
+                const tx = await contractFltDrop.transfer(account, lockedBalance);
+                await tx.wait();
+                alert("FLT tokens withdrawn successfully.");
+            } catch (error) {
+                console.error("Withdrawal error:", error);
+                alert("Withdrawal error: " + error.message);
+            }
+        }
+    });
+
+    function blockchainTimestampToDateTime(blockchainTimestamp) {
+        const date = new Date(blockchainTimestamp * 1000);
+        const year = date.getFullYear();
+        const month = ('0' + (date.getMonth() + 1)).slice(-2);
+        const day = ('0' + date.getDate()).slice(-2);
+        const hours = ('0' + date.getHours()).slice(-2);
+        const minutes = ('0' + date.getMinutes()).slice(-2);
+        const seconds = ('0' + date.getSeconds()).slice(-2);
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 </script>
 </body>
