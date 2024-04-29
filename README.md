@@ -13,11 +13,17 @@
 
 ### Web Link
 
-https://xdpcs.github.io/flt-withdraw/
+Should you prefer not to run it locally, you can utilize this [web link](https://xdpcs.github.io/flt-withdraw/). I've deployed it.
 
 ### To run it locally
 
-1. Run the `index.html` file.
+1. Run the script below.
+
+   ```shell
+   npm install -g http-server
+   http-server
+   ```
+
 2. Click the `connect` button.
 3. Click the `withdraw` button.
 
