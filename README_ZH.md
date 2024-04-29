@@ -13,11 +13,17 @@
 
 ### 网页链接
 
-https://xdpcs.github.io/flt-withdraw/
+如果你不想在本地运行，你可以使用这个[网页链接](https://xdpcs.github.io/flt-withdraw/)。我已经部署了它。
 
 ### 本地运行
 
-1. 运行`index.html`文件
+1. 运行下面脚本
+
+   ```shell
+   npm install -g http-server
+   http-server
+   ```
+
 2. 点击 `connect` 按钮
 3. 点击 `withdraw`按钮
 
