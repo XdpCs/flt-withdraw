@@ -151,8 +151,13 @@
                 const lockedBalances = await contractFltDrop.lockedBalances(account);
                 console.log(`Lock Time: ${lockedBalances.unlockTime}`);
                 showLockTime.textContent = blockchainTimestampToDateTime(lockedBalances.unlockTime.toString());
-                connectButton.style.display = 'none';
-                withdrawButton.style.display = '';
+                if (lockedBalance > 0) {
+                    connectButton.style.display = 'none';
+                    withdrawButton.style.display = '';
+                } else {
+                    alert("There are no FLT tokens available for withdrawal.");
+                }
+
             } catch (error) {
                 console.error("Error connecting to wallet:", error);
                 alert("Error connecting to wallet. Please make sure you have an Ethereum wallet installed and unlocked.");
@@ -162,7 +167,7 @@
         async function withdrawOnClick() {
             console.log("Withdrawing FLT...");
             try {
-                if (lockedBalance === 0) {
+                if (lockedBalance == 0) {
                     throw new Error('There are no FLT tokens available for withdrawal.');
                 }
                 const provider = new ethers.BrowserProvider(window.ethereum);
@@ -175,7 +180,7 @@
                 await tx.wait();
                 alert("FLT tokens withdrawn successfully.");
             } catch (error) {
-                console.error("Withdrawal error:", error);
+                console.error("Withdrawal error:", error.message);
                 alert("Withdrawal error: " + error.message);
             }
         }
